@@ -2,6 +2,8 @@ package com.example.quizzlerandroid;
 
 import com.google.gson.annotations.SerializedName;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 public class Quiz {
     @SerializedName("question")
     private String question;
@@ -9,7 +11,7 @@ public class Quiz {
     private boolean answer;
 
     public String getQuestion() {
-        return question;
+        return StringEscapeUtils.unescapeHtml4(question);
     }
 
     public void setQuestion(String question) {
