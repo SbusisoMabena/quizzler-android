@@ -54,27 +54,27 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    @get:Throws(IOException::class)
-    private val quiz: Unit
-        private get() {
-            val retrofit = Retrofit.Builder()
-                .baseUrl(QuizApi.BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build()
-            val quizApi = retrofit.create(QuizApi::class.java)
-            val call = quizApi.quiz
-            call.enqueue(object : Callback<Data?> {
-                override fun onResponse(call: Call<Data?>, response: Response<Data?>) {
-                    val data = response.body()!!
-                    quizzes = data.data
-                    play(quizzes)
-                }
-
-                override fun onFailure(call: Call<Data?>, t: Throwable) {
-                    Toast.makeText(applicationContext, t.message, Toast.LENGTH_LONG).show()
-                }
-            })
-        }
+//    @get:Throws(IOException::class)
+//    private val quiz: Unit
+//        private get() {
+//            val retrofit = Retrofit.Builder()
+//                .baseUrl(QuizApi.BASE_URL)
+//                .addConverterFactory(GsonConverterFactory.create())
+//                .build()
+//            val quizApi = retrofit.create(QuizApi::class.java)
+//            val call = quizApi.quiz()
+//            call.enqueue(object : Callback<Data?> {
+//                override fun onResponse(call: Call<Data?>, response: Response<Data?>) {
+//                    val data = response.body()!!
+//                    quizzes = data.data
+//                    play(quizzes)
+//                }
+//
+//                override fun onFailure(call: Call<Data?>, t: Throwable) {
+//                    Toast.makeText(applicationContext, t.message, Toast.LENGTH_LONG).show()
+//                }
+//            })
+//        }
 
     private fun play(questions: List<Quiz>?) {
         val question = questions!![quizIndex]
