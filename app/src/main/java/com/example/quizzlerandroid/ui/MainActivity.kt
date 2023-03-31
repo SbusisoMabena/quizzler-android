@@ -1,4 +1,4 @@
-package com.example.quizzlerandroid
+package com.example.quizzlerandroid.ui
 
 import android.os.Bundle
 import android.view.View
@@ -7,6 +7,10 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.example.quizzlerandroid.Data
+import com.example.quizzlerandroid.Quiz
+import com.example.quizzlerandroid.api.QuizApi
+import com.example.quizzlerandroid.R
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -30,6 +34,11 @@ class MainActivity : AppCompatActivity() {
         trueBtn = findViewById(R.id.button)
         falseBtn = findViewById(R.id.button2)
         scoreTextView?.text = "Score $score/10"
+
+        // do View model stuff
+
+
+
         try {
             quiz
         } catch (e: IOException) {
