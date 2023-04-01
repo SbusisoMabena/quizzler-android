@@ -6,28 +6,24 @@ import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.example.quizzlerandroid.databinding.ActivityMainBinding
 import com.example.quizzlerandroid.game.viewmodel.QuizViewModel
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var questionCountTextView: TextView
-    private lateinit var questionTextView: TextView
-    private lateinit var scoreTextView: TextView
-    private var trueBtn: Button? = null
-    private var falseBtn: Button? = null
+    private lateinit var binding: ActivityMainBinding
+
     private val quizViewModel: QuizViewModel by viewModels { QuizViewModel.Factory }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        questionTextView = findViewById(R.id.textView)
-        questionCountTextView = findViewById(R.id.question_count)
-        scoreTextView = findViewById(R.id.score)
-        trueBtn = findViewById(R.id.button)
-        falseBtn = findViewById(R.id.button2)
+
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
 
         quizViewModel.game().observe(this) { game ->
-            questionTextView.text = game.question
-            scoreTextView.text = getString(R.string.score, game.score)
-            questionCountTextView.text =
+            binding.question.text = game.question
+            binding.score.text = getString(R.string.score, game.score)
+            binding.questionCount.text =
                 getString(R.string.question_count, game.questionCount, game.totalQuestions)
             if (game.isGameOver) {
                 val alert = AlertDialog.Builder(this)
@@ -41,10 +37,10 @@ class MainActivity : AppCompatActivity() {
 
         quizViewModel.initGame()
 
-        trueBtn?.setOnClickListener {
+        binding.btnTrue.setOnClickListener {
             quizViewModel.answer(true)
         }
-        falseBtn?.setOnClickListener {
+        binding.btnFalse.setOnClickListener {
             quizViewModel.answer(false)
         }
     }
