@@ -2,7 +2,6 @@ package com.example.quizzlerandroid.viewmodel
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
-import com.example.quizzlerandroid.Data
 import com.example.quizzlerandroid.common.network.QuizApi
 import com.example.quizzlerandroid.common.repository.QuizRepository
 import com.example.quizzlerandroid.game.data.Quiz
@@ -14,35 +13,33 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.internal.verification.Calls
 import org.mockito.kotlin.*
-import retrofit2.Call
-import retrofit2.Retrofit
-import javax.security.auth.callback.Callback
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class QuizViewModelTests {
+
     @get:Rule
     val taskExecutorRule = InstantTaskExecutorRule()
 
-    private lateinit var api: QuizApi
     private lateinit var viewModel: QuizViewModel
     private lateinit var loadingObserver: Observer<Boolean>
     private lateinit var errorObserver: Observer<Boolean>
-    private lateinit var questionsObserver: Observer<List<Quiz>>
     private lateinit var quizRepository: QuizRepository
+    private lateinit var gameObserver: Observer<QuizViewModel.GameState>
 
     @Before
     fun setup() {
+        Dispatchers.setMain(dispatcher = StandardTestDispatcher())
+
         quizRepository = mock();
         viewModel = QuizViewModel(quizRepository)
         loadingObserver = mock()
         viewModel.loading().observeForever(loadingObserver)
         errorObserver = mock()
         viewModel.error().observeForever(errorObserver)
-        questionsObserver = mock()
-        viewModel.questions().observeForever(questionsObserver)
-        Dispatchers.setMain(dispatcher = StandardTestDispatcher())
+
+        gameObserver = mock()
+        viewModel.game().observeForever(gameObserver)
     }
 
     @After
@@ -51,13 +48,21 @@ class QuizViewModelTests {
     }
 
     @Test
-    fun `initGame should show loading`() {
+    fun `initGame should fetch questions from the repository`() = runTest {
+        viewModel.initGame()
+        advanceUntilIdle()
+
+        verify(quizRepository).getQuestions()
+    }
+
+    @Test
+    fun `initGame should show loader while loading game`() {
         viewModel.initGame()
         verify(loadingObserver).onChanged(eq(true))
     }
 
     @Test
-    fun `initGame should hide errors`() {
+    fun `initGame should hide errors while loading game`() {
         viewModel.initGame()
         verify(errorObserver).onChanged(eq(false))
     }
@@ -77,7 +82,7 @@ class QuizViewModelTests {
         }
 
     @Test
-    fun `initGame should fetch questions from the repository`() = runTest {
+    fun `initGame should hide loader and error when successful`() = runTest {
         val quiz = Quiz();
         quiz.question = "::question::"
 
@@ -90,6 +95,157 @@ class QuizViewModelTests {
 
         verify(errorObserver).onChanged(eq(false))
         verify(loadingObserver).onChanged(eq(false))
-        verify(questionsObserver).onChanged(eq(questions))
+    }
+
+    @Test
+    fun `the game is not over when it starts`() = runTest {
+        doAnswer {
+            listOf(Quiz())
+        }.whenever(quizRepository).getQuestions()
+
+        viewModel.initGame()
+        advanceUntilIdle()
+
+        verify(gameObserver).onChanged(
+            eq(
+                QuizViewModel.GameState(
+                    question = "", isGameOver = false
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `initGame should show first question when successful`() = runTest {
+        val quiz = Quiz();
+        quiz.question = "::question::"
+
+        val questions = listOf(quiz)
+        doAnswer {
+            questions
+        }.whenever(quizRepository).getQuestions()
+
+        viewModel.initGame()
+        advanceUntilIdle()
+
+        verify(gameObserver).onChanged(
+            eq(
+                QuizViewModel.GameState(
+                    question = "::question::",
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `should show score`() = runTest {
+        val quiz = Quiz();
+        quiz.question = "::question::"
+
+        val questions = listOf(quiz)
+        doAnswer {
+            questions
+        }.whenever(quizRepository).getQuestions()
+
+        viewModel.initGame()
+        advanceUntilIdle()
+
+        verify(gameObserver).onChanged(
+            eq(
+                QuizViewModel.GameState(
+                    question = "::question::", score = 0
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `should show the question count`() = runTest {
+        val quiz = Quiz();
+        quiz.question = "::question::"
+
+        val questions = listOf(quiz, quiz, quiz)
+        doAnswer {
+            questions
+        }.whenever(quizRepository).getQuestions()
+
+        viewModel.initGame()
+        advanceUntilIdle()
+
+        verify(gameObserver).onChanged(
+            eq(
+                QuizViewModel.GameState(
+                    question = "::question::",
+                    score = 0,
+                    questionCount = 1,
+                    totalQuestions = questions.size
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `updates the question and count when answered`() = runTest {
+        val quiz1 = Quiz();
+        quiz1.question = "::question-1::"
+
+        val quiz2 = Quiz();
+        quiz2.question = "::question-2::"
+
+        val quiz3 = Quiz();
+        quiz3.question = "::question-3::"
+
+        val questions = listOf(quiz1, quiz2, quiz3)
+        doAnswer {
+            questions
+        }.whenever(quizRepository).getQuestions()
+
+        viewModel.initGame()
+        advanceUntilIdle()
+
+        viewModel.answer()
+
+        verify(gameObserver).onChanged(
+            eq(
+                QuizViewModel.GameState(
+                    question = quiz2.question,
+                    score = 0,
+                    questionCount = 2,
+                    totalQuestions = questions.size,
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `ends the game when the last question has been answered`() = runTest {
+        val quiz1 = Quiz();
+        quiz1.question = "::question-1::"
+
+        val quiz2 = Quiz();
+        quiz2.question = "::question-2::"
+
+        val questions = listOf(quiz1, quiz2)
+        doAnswer {
+            questions
+        }.whenever(quizRepository).getQuestions()
+
+        viewModel.initGame()
+        advanceUntilIdle()
+
+        viewModel.answer()
+        viewModel.answer()
+
+        verify(gameObserver).onChanged(
+            eq(
+                QuizViewModel.GameState(
+                    question = quiz2.question,
+                    score = 0,
+                    questionCount = 2,
+                    totalQuestions = questions.size,
+                    isGameOver = true
+                )
+            )
+        )
     }
 }

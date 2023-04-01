@@ -5,7 +5,7 @@ import org.apache.commons.lang3.StringEscapeUtils
 
 class Quiz {
     @SerializedName("question")
-    var question: String? = null
+    var question: String = ""
         get() = StringEscapeUtils.unescapeHtml4(field)
 
     @SerializedName("correct_answer")

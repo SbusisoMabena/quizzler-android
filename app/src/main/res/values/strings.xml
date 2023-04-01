@@ -1,3 +1,5 @@
 <resources>
 <string name="app_name">Quizzler Android</string>
+    <string name="question_count">%1$d of %2$d questions</string>
+    <string name="score">Score: %1$d</string>
 </resources>
