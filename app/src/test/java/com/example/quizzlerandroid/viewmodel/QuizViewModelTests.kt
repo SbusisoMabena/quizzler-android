@@ -2,7 +2,6 @@ package com.example.quizzlerandroid.viewmodel
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
-import com.example.quizzlerandroid.common.network.QuizApi
 import com.example.quizzlerandroid.common.repository.QuizRepository
 import com.example.quizzlerandroid.game.data.Quiz
 import com.example.quizzlerandroid.game.viewmodel.QuizViewModel
@@ -203,7 +202,7 @@ class QuizViewModelTests {
         viewModel.initGame()
         advanceUntilIdle()
 
-        viewModel.answer()
+        viewModel.answer(true)
 
         verify(gameObserver).onChanged(
             eq(
@@ -233,8 +232,8 @@ class QuizViewModelTests {
         viewModel.initGame()
         advanceUntilIdle()
 
-        viewModel.answer()
-        viewModel.answer()
+        viewModel.answer(true)
+        viewModel.answer(true)
 
         verify(gameObserver).onChanged(
             eq(
@@ -243,6 +242,64 @@ class QuizViewModelTests {
                     score = 0,
                     questionCount = 2,
                     totalQuestions = questions.size,
+                    isGameOver = true
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `increments the score when the answer is correct`() = runTest {
+        val quiz = Quiz();
+        quiz.question = "::question-1::"
+        quiz.isAnswer = true
+
+        val questions = listOf(quiz)
+        doAnswer {
+            questions
+        }.whenever(quizRepository).getQuestions()
+
+        viewModel.initGame()
+        advanceUntilIdle()
+
+        viewModel.answer(true)
+
+        verify(gameObserver).onChanged(
+            eq(
+                QuizViewModel.GameState(
+                    question = quiz.question,
+                    score = 1,
+                    questionCount = 1,
+                    totalQuestions = 1,
+                    isGameOver = true
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `does not increment the score when the answer is incorrect`() = runTest {
+        val quiz = Quiz();
+        quiz.question = "::question-1::"
+        quiz.isAnswer = true
+
+        val questions = listOf(quiz)
+        doAnswer {
+            questions
+        }.whenever(quizRepository).getQuestions()
+
+        viewModel.initGame()
+        advanceUntilIdle()
+
+        viewModel.answer(false)
+
+        verify(gameObserver).onChanged(
+            eq(
+                QuizViewModel.GameState(
+                    question = quiz.question,
+                    score = 0,
+                    questionCount = 1,
+                    totalQuestions = 1,
                     isGameOver = true
                 )
             )

@@ -42,10 +42,10 @@ class MainActivity : AppCompatActivity() {
         quizViewModel.initGame()
 
         trueBtn?.setOnClickListener {
-            quizViewModel.answer()
+            quizViewModel.answer(true)
         }
         falseBtn?.setOnClickListener {
-            quizViewModel.answer()
+            quizViewModel.answer(false)
         }
     }
 }
