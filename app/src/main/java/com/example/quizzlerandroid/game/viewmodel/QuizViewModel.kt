@@ -25,6 +25,7 @@ class QuizViewModel(private val repository: QuizRepository) : ViewModel() {
     fun initGame() {
         loadingLiveData.value = true
         errorLiveData.value = false
+        currentIndex = 0
         viewModelScope.launch {
             try {
                 loadingLiveData.value = false

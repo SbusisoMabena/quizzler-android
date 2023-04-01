@@ -30,7 +30,10 @@ class MainActivity : AppCompatActivity() {
                 alert.setTitle("Game Over")
                 alert.setCancelable(false)
                 alert.setMessage("You scored " + game.score + " of " + game.totalQuestions + " points.")
-                alert.setPositiveButton("Close App") { dialog, which -> finish() }
+                alert.setNegativeButton("Close App") { dialog, which -> finish() }
+                alert.setPositiveButton("Play Again") { _, _ ->
+                    quizViewModel.initGame()
+                }
                 alert.show()
             }
         }
