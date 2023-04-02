@@ -6,7 +6,7 @@ import retrofit2.Call
 import retrofit2.http.GET
 
 interface QuizApi {
-    @GET("api.php?amount=10&difficulty=medium&type=boolean&category=18")
+    @GET("api.php?amount=13&type=boolean&category=9")
     suspend fun getQuestions(): Data
 
     // TODO move instantiation logic from Repo to here
