@@ -46,25 +46,24 @@ class QuizViewModel(private val repository: QuizRepository) : ViewModel() {
     fun loading(): LiveData<Boolean> = loadingLiveData
     fun error(): LiveData<Boolean> = errorLiveData
     fun answer(answer: Boolean) {
-        if (game.value!!.isGameOver) {
-            return
-        }
-
         var score = game.value!!.score
 
         if (questions[currentIndex].isAnswer == answer) {
             score++
         }
+
         if (currentIndex + 1 < questions.size) {
             currentIndex++
+            game.value = game.value!!.copy(
+                question = questions.get(currentIndex).question,
+                questionCount = currentIndex + 1,
+                score = score
+            )
+        } else {
+            game.value = game.value!!.copy(
+                isGameOver = true
+            )
         }
-
-        game.value = game.value!!.copy(
-            question = questions.get(currentIndex).question,
-            questionCount = currentIndex + 1,
-            isGameOver = currentIndex + 1 >= questions.size,
-            score = score
-        )
     }
 
     companion object {

@@ -235,6 +235,7 @@ class QuizViewModelTests {
         viewModel.answer(true)
         viewModel.answer(true)
 
+        verify(gameObserver, times(3)).onChanged(any())
         verify(gameObserver).onChanged(
             eq(
                 QuizViewModel.GameState(
@@ -263,6 +264,7 @@ class QuizViewModelTests {
         advanceUntilIdle()
 
         viewModel.answer(true)
+        advanceUntilIdle()
 
         verify(gameObserver).onChanged(
             eq(
